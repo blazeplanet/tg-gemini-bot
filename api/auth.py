@@ -1,20 +1,21 @@
-from .config import ALLOWED_USERS, ADMIN_ID, AUCH_ENABLE, ALLOWED_GROUPS
-
-
+import os
 
 def is_authorized(is_group, from_id: int, user_name: str, chat_id, group_name) -> bool:
-    if AUCH_ENABLE == "0":
+    if os.getenv("AUCH_ENABLE", "0") == "0":
         return True
+
+    allowed_users = os.getenv("ALLOWED_USERS", "").split(",")
+    allowed_groups = os.getenv("ALLOWED_GROUPS", "").split(",")
+
     if is_group:
-        if str(group_name).lower() in ALLOWED_GROUPS or str(chat_id) in ALLOWED_GROUPS:
+        if str(group_name).lower() in [g.lower() for g in allowed_groups] or str(chat_id) in allowed_groups:
             return True
     else:
-        if str(user_name).lower() in ALLOWED_USERS or str(from_id) in ALLOWED_USERS:
+        if str(user_name).lower() in [u.lower() for u in allowed_users] or str(from_id) in allowed_users:
             return True
+
     return False
 
 
 def is_admin(from_id: int) -> bool:
-    if str(from_id) == ADMIN_ID:
-        return True
-    return False
+    return str(from_id) == os.getenv("ADMIN_ID", "")
